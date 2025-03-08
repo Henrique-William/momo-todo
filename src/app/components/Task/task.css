@@ -1,0 +1,55 @@
+.task {
+  padding: 1.375rem;
+  background-color: var(--white);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  cursor: pointer;
+}
+
+.task__title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--primary);
+  flex: 1;
+}
+
+.task__title-hashed {
+  text-decoration: line-through;
+  color: var(--gray);
+  font-weight: 500;
+}
+
+.task__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task__finalize,
+.task__delete {
+  background-color: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 200ms ease-in-out;
+}
+
+.task__finalize:hover {
+    background-color: var(--primary-light);
+}
+
+.task__delete:hover {
+    background-color: var(--red-light);
+}
+.image__actions {
+  width: 22px;
+  height: 22px;
+}

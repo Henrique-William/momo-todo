@@ -1,0 +1,52 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+}
+
+.search__container {
+  display: flex;
+  align-items: center;
+  gap: 0.725rem;
+  width: calc(100% / 3);
+  margin-top: 10rem;
+  margin-bottom: 3.725rem;
+}
+
+.search-field {
+  height: 40px;
+  flex: 1;
+  border: solid 2px var(--primary);
+  border-radius: 0.5rem;
+  background-color: transparent;
+  padding: 0.5rem 0.725rem;
+}
+
+.add-task {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: 200ms ease-in;
+}
+
+.add-task:hover {
+  background-color: var(--primary-light);
+}
+
+.add-task__img {
+  width: 70%;
+  height: 70%;
+}
+
+.tasks__container,
+.tasks__finished {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: calc(100% / 3);
+  margin-bottom: 3.725rem;
+}
