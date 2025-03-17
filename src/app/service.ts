@@ -1,0 +1,1 @@
+export const apiDev = "http://localhost:8080";

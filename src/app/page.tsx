@@ -4,7 +4,10 @@ import Image from "next/image";
 import Task from "./components/Task/Task";
 
 import addImage from "/public/image/add.png";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
+import { apiDev } from "./service";
+import Modal from "./components/Modal/Modal";
+import CustomSelect from "./components/CustomSelect/CustomSelect";
 
 type Task = {
   id: number;
@@ -18,49 +21,80 @@ type Task = {
 export default function Home() {
   const [data, setData] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [taskName, setTaskName] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskPriority, setTaskPriority] = useState(2);
+  const [taskDate, setTaskDate] = useState("");
 
-  //lista todas as tarefas
+  // Função para buscar as tarefas do backend
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`${apiDev}/tasks`);
+      const tasks: Task[] = await response.json();
+      setData(tasks);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Erro ao buscar dados", error);
+      setIsLoading(false);
+    }
+  };
+
+  // Chama fetchData ao montar o componente
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/tasks");
-        const tasks: Task[] = await response.json();
-        setData(tasks);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Erro ao buscar dados", error);
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
+  const handleAddTask = async () => {
+    const taskData = {
+      name: taskName,
+      description: taskDescription,
+      priority: taskPriority,
+      date: taskDate,
+    };
+
+    try {
+      const response = await fetch(`${apiDev}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskData),
+      });
+
+      if (response.ok) {
+        setTaskName("");
+        setTaskDescription("");
+        setTaskPriority(2);
+        setTaskDate("");
+
+        setIsModalOpen(false);
+        fetchData();
+      } else {
+        console.error("Erro ao adicionar tarefa");
+      }
+    } catch (error) {
+      console.error("Erro:", error);
+    }
+  };
+
   const finalizeTask = async (task: Task) => {
     try {
-      // Criamos um novo objeto com os mesmos dados da tarefa, apenas alterando o isFinalized
       const updatedTask = { ...task, isFinalized: !task.isFinalized };
-      console.log(updatedTask);
 
-      const response = await fetch(
-        `http://localhost:8080/tasks/task?id=${task.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedTask), // Envia o objeto completo
-        }
-      );
+      const response = await fetch(`${apiDev}/tasks/task?id=${task.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTask),
+      });
 
       if (!response.ok) {
         throw new Error("Erro ao atualizar status da tarefa");
       }
 
-      // Atualiza o estado localmente para refletir a mudança sem precisar refazer a requisição GET
-      setData((prevData) =>
-        prevData.map((t) => (t.id === task.id ? updatedTask : t))
-      );
+      fetchData(); // Atualiza a lista após finalizar uma tarefa
     } catch (error) {
       console.error("Erro ao atualizar tarefa:", error);
     }
@@ -73,19 +107,15 @@ export default function Home() {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/tasks/task?id=${task.id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${apiDev}/tasks/task?id=${task.id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         throw new Error("Erro ao deletar tarefa");
       }
 
-      // Atualiza o estado removendo a tarefa deletada
-      setData((prevData) => prevData.filter((t) => t.id !== task.id));
+      fetchData(); // Atualiza a lista após excluir uma tarefa
     } catch (error) {
       console.error("Erro ao deletar tarefa:", error);
       alert("Erro ao deletar tarefa. Tente novamente!");
@@ -107,21 +137,72 @@ export default function Home() {
           className="search-field"
           placeholder="Search a task"
         />
-        <button className="add-task">
+        <button className="add-task" onClick={() => setIsModalOpen(true)}>
           <Image
             src={addImage}
-            alt="botao de adicionar task"
+            alt="Adicionar task"
             className="add-task__img"
           />
         </button>
       </div>
 
-      {/* Tasks to do */}
+      {/* Modal para adicionar task */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h2 className="modal-title">Adding Task</h2>
+        <div className="modal-container">
+          <div className="modal-field">
+            <p>Name</p>
+            <input
+              type="text"
+              className="input-field__modal"
+              placeholder="Add a name to your task"
+              maxLength={155}
+              value={taskName}
+              onChange={(e) => setTaskName(e.target.value)}
+            />
+          </div>
+
+          <div className="modal-field">
+            <p>Description</p>
+            <input
+              type="text"
+              className="input-field__modal"
+              placeholder="Add a description to your task"
+              maxLength={350}
+              value={taskDescription}
+              onChange={(e) => setTaskDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="modal-field">
+            <p>Priority</p>
+            <CustomSelect value={taskPriority} onChange={setTaskPriority} />
+          </div>
+
+          <div className="modal-field">
+            <p>Date</p>
+            <input
+              type="date"
+              className="input-field__modal"
+              value={taskDate}
+              onChange={(e) => setTaskDate(e.target.value)}
+            />
+          </div>
+
+          <div className="modal-add__container">
+            <button className="modal-add_task" onClick={handleAddTask}>
+              Add Task
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Tarefas a fazer */}
       <div className="tasks__container">
         <h2 className="title">Tasks to do {tasksTodo.length}</h2>
-        {tasksTodo.map((task, index) => (
+        {tasksTodo.map((task) => (
           <Task
-            key={index}
+            key={task.id}
             name={task.name}
             description={task.description}
             isFinalized={task.isFinalized}
@@ -133,13 +214,13 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Tasks finished */}
+      {/* Tarefas finalizadas */}
       {tasksFinished.length > 0 && (
         <div className="tasks__finished">
           <h2 className="title">Done - {tasksFinished.length}</h2>
-          {tasksFinished.map((task, index) => (
+          {tasksFinished.map((task) => (
             <Task
-              key={index}
+              key={task.id}
               name={task.name}
               description={task.description}
               isFinalized={task.isFinalized}

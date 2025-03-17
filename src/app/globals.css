@@ -6,8 +6,10 @@
   --primary: #748e63;
   --primary-light: #c2d4b6;
   --white: #f6edda;
+  --red: "ef717171";
   --red-light: #ffd6d6;
   --gray: #b0b0b0;
+  --font: "Urbanist", sans-serif;
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -26,7 +28,7 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Urbanist", sans-serif;
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
